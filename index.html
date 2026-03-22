@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>VM Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Raleway:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0a;
+  --bg2:#111;
+  --card:#161616;
+  --border:#2a2a2a;
+  --gold:#d4a017;
+  --gold2:#f0c040;
+  --gold3:#8b6914;
+  --text:#f0ede8;
+  --muted:#666;
+  --muted2:#888;
+  --green2:#4caf50;
+  --red:#ef5350;
+  --ai:#7c3aed;
+  --ai2:#a78bfa;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:'Raleway','Noto Sans Tamil',sans-serif;min-height:100vh;padding-bottom:80px}
+
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:13px 16px;position:sticky;top:0;z-index:100}
+.header-inner{display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'Playfair Display',serif;font-size:18px;font-weight:900}
+.logo em{color:var(--gold);font-style:normal}
+.htime{font-size:11px;color:var(--gold);font-weight:600;letter-spacing:1px}
+.gold-line{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin-top:10px}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);display:flex;z-index:100}
+.ni{flex:1;padding:10px 2px;text-align:center;cursor:pointer;font-size:9px;color:var(--muted2);border:none;background:none;font-family:'Raleway',sans-serif;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;border-top:2px solid transparent;transition:all 0.2s}
+.ni span{font-size:20px;display:block;margin-bottom:2px}
+.ni.on{color:var(--gold);border-top-color:var(--gold)}
+/* AI tab special */
+.ni.ai-tab{color:var(--ai2)}
+.ni.ai-tab.on{color:var(--ai2);border-top-color:var(--ai2)}
+
+.page{display:none;padding:14px;animation:fi 0.2s ease}
+.page.on{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cc,var(--gold3)),transparent)}
+.ct{font-family:'Playfair Display',serif;font-size:13px;font-weight:700;color:var(--gold);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+/* STATS */
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.sb{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;position:relative;overflow:hidden}
+.sb::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--sc,var(--gold)),transparent)}
+.sv{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;color:var(--sc,var(--gold))}
+.sl{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:3px}
+
+/* PROFIT HERO */
+.profit-hero{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center;margin-bottom:14px;position:relative;overflow:hidden}
+.profit-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.profit-hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.ph-label{font-size:9px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px}
+.ph-amount{font-family:'Playfair Display',serif;font-size:34px;font-weight:900;color:var(--gold);letter-spacing:1px}
+.ph-sub{font-size:10px;color:var(--muted2);margin-top:6px;letter-spacing:0.5px}
+
+/* SECTION */
+.sec{font-family:'Playfair Display',serif;font-size:12px;font-weight:700;color:var(--gold);margin:16px 0 10px;display:flex;align-items:center;gap:8px}
+.sec::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--gold3),transparent)}
+
+/* FORM */
+.fg{margin-bottom:10px}
+.fl{font-size:9px;color:var(--muted2);font-weight:700;display:block;margin-bottom:4px;letter-spacing:1.5px;text-transform:uppercase}
+.fi,.fs{width:100%;background:#0a0a0a;border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-size:13px;font-family:'Raleway','Noto Sans Tamil',sans-serif;outline:none;transition:border-color 0.2s}
+.fi:focus,.fs:focus{border-color:var(--gold3)}
+.fs option{background:var(--card)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* BUTTONS */
+.btn{width:100%;padding:12px;border-radius:6px;border:1px solid var(--gold3);color:var(--gold);background:transparent;font-size:11px;font-weight:700;cursor:pointer;font-family:'Raleway',sans-serif;letter-spacing:1.5px;text-transform:uppercase;transition:all 0.2s}
+.btn:active{transform:scale(0.98);background:rgba(212,160,23,0.08)}
+.btn-ai{border-color:var(--ai);color:var(--ai2);box-shadow:0 0 15px rgba(124,58,237,0.2)}
+.btn-sm{width:auto;padding:5px 10px;font-size:9px;border-radius:4px;border:1px solid var(--border);color:var(--muted2);background:transparent;cursor:pointer;font-family:'Raleway',sans-serif;letter-spacing:0.5px;text-transform:uppercase}
+.btn-del{border-color:var(--red);color:var(--red)}
+
+/* TRANSACTION ITEM */
+.txn{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;transition:border-color 0.2s}
+.txn:hover{border-color:var(--gold3)}
+.txn-top{display:flex;justify-content:space-between;align-items:flex-start}
+.txn-name{font-family:'Playfair Display',serif;font-size:13px;font-weight:700}
+.txn-user{font-size:10px;color:var(--gold);margin-top:2px}
+.txn-pf{font-family:'Playfair Display',serif;font-size:15px;font-weight:900;color:var(--green2)}
+.txn-pf.neg{color:var(--red)}
+.txn-meta{font-size:10px;color:var(--muted2);margin-top:2px;text-align:right}
+.txn-details{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.td{font-size:10px}
+.td-l{font-size:9px;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:1px}
+.td-v{color:var(--text);font-weight:500;word-break:break-all}
+.txn-act{display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+
+/* BADGE */
+.badge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:1px solid}
+.b-tg{border-color:#7b68ee;color:#7b68ee}
+.b-paytm{border-color:#4fc3f7;color:#4fc3f7}
+.b-bhim{border-color:var(--gold);color:var(--gold)}
+.b-bajaj{border-color:#ff8f00;color:#ff8f00}
+.b-gift{border-color:#ec4899;color:#ec4899}
+.b-other{border-color:var(--muted);color:var(--muted)}
+
+/* FILTER */
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.fb{padding:6px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:9px;font-weight:700;cursor:pointer;font-family:'Raleway',sans-serif;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s}
+.fb.on{border-color:var(--gold);color:var(--gold);background:rgba(212,160,23,0.06)}
+
+/* SEARCH */
+.sw{position:relative;margin-bottom:12px}
+.si{width:100%;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px 12px 10px 34px;color:var(--text);font-size:13px;font-family:'Raleway',sans-serif;outline:none}
+.si:focus{border-color:var(--gold3)}
+.sw::before{content:'⌕';position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--gold3);font-size:15px}
+
+/* CALC BOX */
+.calc{background:#050505;border:1px solid var(--gold3);border-radius:6px;padding:10px;margin-bottom:10px}
+.calc-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.calc-l{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.calc-v{font-family:'Playfair Display',serif;font-size:16px;font-weight:900}
+
+/* ===== AI CHAT ===== */
+.ai-page{display:flex;flex-direction:column;height:calc(100vh - 135px);padding:0}
+.ai-header{padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg2)}
+.ai-title{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--ai2);display:flex;align-items:center;gap:8px}
+.ai-dot{width:8px;height:8px;background:var(--ai2);border-radius:50%;box-shadow:0 0 8px var(--ai2);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.ai-sub{font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:0.5px}
+
+.chat-messages{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:85%;padding:10px 14px;border-radius:10px;font-size:13px;line-height:1.6;animation:msgIn 0.2s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-user{align-self:flex-end;background:rgba(212,160,23,0.12);border:1px solid var(--gold3);color:var(--text);border-radius:10px 10px 2px 10px}
+.msg-ai{align-self:flex-start;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.3);color:var(--text);border-radius:10px 10px 10px 2px}
+.msg-ai strong{color:var(--ai2)}
+.msg-time{font-size:9px;color:var(--muted);margin-top:4px;letter-spacing:0.5px}
+.typing{display:flex;gap:4px;padding:4px 0}
+.typing span{width:6px;height:6px;background:var(--ai2);border-radius:50%;animation:bounce 1.2s infinite}
+.typing span:nth-child(2){animation-delay:0.2s}
+.typing span:nth-child(3){animation-delay:0.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+
+.chat-input-area{padding:12px 16px;background:var(--bg2);border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end}
+.chat-input{flex:1;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;font-family:'Raleway','Noto Sans Tamil',sans-serif;outline:none;resize:none;min-height:42px;max-height:100px;line-height:1.5;transition:border-color 0.2s}
+.chat-input:focus{border-color:rgba(124,58,237,0.5)}
+.send-btn{background:linear-gradient(135deg,var(--ai),#5b21b6);border:none;border-radius:8px;width:42px;height:42px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;transition:all 0.2s}
+.send-btn:active{transform:scale(0.95)}
+.send-btn:disabled{opacity:0.5}
+
+.quick-prompts{display:flex;gap:6px;flex-wrap:wrap;padding:8px 16px;border-bottom:1px solid var(--border);background:var(--bg2)}
+.qp{padding:5px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:10px;cursor:pointer;font-family:'Raleway',sans-serif;transition:all 0.2s;white-space:nowrap}
+.qp:hover{border-color:var(--ai);color:var(--ai2)}
+
+/* TOAST */
+.toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card);border:1px solid var(--gold3);color:var(--gold);padding:9px 18px;border-radius:6px;font-size:11px;font-weight:700;opacity:0;transition:all 0.3s;z-index:9999;white-space:nowrap;letter-spacing:1px;font-family:'Raleway',sans-serif;text-transform:uppercase}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{border-color:var(--red);color:var(--red)}
+
+.empty{text-align:center;padding:30px 20px;color:var(--muted)}
+.empty div:first-child{font-size:32px;opacity:0.3;margin-bottom:8px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="logo"><em>VM</em> Tracker</div>
+    <div class="htime" id="htime"></div>
+  </div>
+  <div class="gold-line"></div>
+</div>
+
+<!-- PAGES -->
+<div id="p0" class="page on"></div>
+
+<div id="p1" class="page">
+  <div class="card" style="--cc:var(--gold)">
+    <div class="ct">New Transaction</div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Type</label>
+        <select class="fs" id="a-src">
+          <option value="tg">Telegram</option>
+          <option value="paytm">Paytm</option>
+          <option value="bhim">BHIM</option>
+          <option value="bajaj">Bajaj</option>
+          <option value="gift">Gift Card</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Name</label><input class="fi" id="a-name" placeholder="Mr Perfect"/></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Username</label><input class="fi" id="a-user" placeholder="@username"/></div>
+      <div class="fg"><label class="fl">User ID</label><input class="fi" id="a-uid" placeholder="6501855787"/></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Phone</label><input class="fi" id="a-phone" placeholder="9876543210" type="tel"/></div>
+      <div class="fg"><label class="fl">UPI ID</label><input class="fi" id="a-upi" placeholder="name@bank"/></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Transaction ID</label><input class="fi" id="a-txnid" placeholder="606046788288"/></div>
+      <div class="fg"><label class="fl">Bank</label><input class="fi" id="a-bank" placeholder="Fi Federal Bank"/></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">App / My UPI</label><input class="fi" id="a-app" placeholder="vinothnft@ptyes"/></div>
+      <div class="fg"><label class="fl">Date & Time</label><input class="fi" id="a-time" placeholder="01 Mar 2026 11:20"/></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Received ₹</label><input class="fi" id="a-recv" placeholder="25" type="number" oninput="calcP()"/></div>
+      <div class="fg"><label class="fl">Given ₹</label><input class="fi" id="a-given" placeholder="24" type="number" oninput="calcP()"/></div>
+    </div>
+    <div class="calc" id="a-calc" style="display:none">
+      <div class="calc-row"><span class="calc-l">Profit</span><span class="calc-v" id="a-pf"></span></div>
+      <div class="calc-row" style="margin:0"><span style="font-size:9px;color:var(--muted)">Margin</span><span style="font-size:11px;color:var(--muted2)" id="a-pct"></span></div>
+    </div>
+    <div class="fg"><label class="fl">Notes</label><input class="fi" id="a-note" placeholder="FASTOFFER / Gift Card details..."/></div>
+    <button class="btn" onclick="addEntry()">Save Transaction</button>
+  </div>
+</div>
+
+<div id="p2" class="page">
+  <div class="sw"><input class="si" id="s-q" placeholder="Search name, username, phone, bank..." oninput="renderRecords()"/></div>
+  <div class="filters">
+    <button class="fb on" onclick="setF('all',this)">All</button>
+    <button class="fb" onclick="setF('tg',this)">Telegram</button>
+    <button class="fb" onclick="setF('paytm',this)">Paytm</button>
+    <button class="fb" onclick="setF('bhim',this)">BHIM</button>
+    <button class="fb" onclick="setF('bajaj',this)">Bajaj</button>
+    <button class="fb" onclick="setF('gift',this)">Gift Card</button>
+  </div>
+  <div id="records"></div>
+</div>
+
+<!-- AI PAGE -->
+<div id="p3" class="page" style="padding:0">
+  <div class="ai-page">
+    <div class="ai-header">
+      <div class="ai-title"><div class="ai-dot"></div> VM AI Assistant</div>
+      <div class="ai-sub">உங்க app-ஐ control பண்ணுங்க · ideas சொல்லுங்க</div>
+    </div>
+    <div class="quick-prompts">
+      <button class="qp" onclick="sendQ(this)">📊 Today summary</button>
+      <button class="qp" onclick="sendQ(this)">💰 Total profit</button>
+      <button class="qp" onclick="sendQ(this)">👥 Top earners</button>
+      <button class="qp" onclick="sendQ(this)">📈 Source breakdown</button>
+      <button class="qp" onclick="sendQ(this)">🎨 Theme மாத்து</button>
+    </div>
+    <div class="chat-messages" id="chat-msgs"></div>
+    <div class="chat-input-area">
+      <textarea class="chat-input" id="chat-in" placeholder="Ask anything about your data, or say 'theme மாத்து', 'gift card add பண்ணு'..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendMsg()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+  <button class="ni on" onclick="sw(0,this)"><span>⬡</span>HOME</button>
+  <button class="ni" onclick="sw(1,this)"><span>+</span>ADD</button>
+  <button class="ni" onclick="sw(2,this)"><span>◈</span>RECORDS</button>
+  <button class="ni ai-tab" onclick="sw(3,this)"><span>✦</span>AI</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== DATA =====
+const INITIAL=[
+  {id:'i1',src:'bhim',name:'Vinoth',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'01 Mar 2026',recv:10,given:9.7,note:''},
+  {id:'i2',src:'bhim',name:'Vinoth',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'01 Mar 2026',recv:10,given:9.7,note:''},
+  {id:'i3',src:'bhim',name:'Girija',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'01 Mar 2026',recv:10,given:9.7,note:''},
+  {id:'i4',src:'bhim',name:'Girija',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'01 Mar 2026',recv:10,given:9.7,note:''},
+  {id:'i5',src:'bajaj',name:'Vinoth',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'01 Mar 2026',recv:3,given:2.91,note:''},
+  {id:'i6',src:'bajaj',name:'Vinoth',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'01 Mar 2026',recv:10,given:9.7,note:''},
+  {id:'i7',src:'paytm',name:'Vinoth',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'01 Mar 2026',recv:10,given:9.7,note:'FASTOFFER'},
+  {id:'i8',src:'tg',name:'Aniket',user:'@aniket9453',uid:'',phone:'7655224730',upi:'7870029453@ptyes',txnid:'606046788288',bank:'Slice Small Finance Bank',app:'vinothnft@ptyes',time:'11:20 AM, 01 Mar 2026',recv:18,given:17.46,note:''},
+  {id:'i9',src:'tg',name:'Vishnu',user:'@Tpp67',uid:'',phone:'5270682688',upi:'Sainikkotak@axl',txnid:'606076877311',bank:'Fi Federal Bank',app:'vinothnft@ptyes',time:'12:03 PM, 01 Mar 2026',recv:10,given:9.7,note:''},
+  {id:'i10',src:'paytm',name:'Vinoth',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'01 Mar 2026',recv:10,given:9.7,note:'FASTOFFER'},
+  {id:'i11',src:'tg',name:'Krishna',user:'@Rahul123457',uid:'',phone:'1058551802',upi:'krishnarahul18032001-1@okicici',txnid:'398138751901',bank:'Jio Payments Bank',app:'vinothnft@ptyes',time:'12:51 PM, 01 Mar 2026',recv:10,given:9.7,note:''},
+  {id:'i12',src:'tg',name:'Vishnu',user:'@Tpp67',uid:'',phone:'5270682688',upi:'Sainikkotak@axl',txnid:'600143368615',bank:'Fi Federal Bank',app:'vinothnft@ptyes',time:'01:09 PM, 01 Mar 2026',recv:10,given:9.7,note:''},
+  {id:'i13',src:'tg',name:'Mr Perfect',user:'@Pinku5686',uid:'',phone:'6501855787',upi:'ritik.8271@ptyes',txnid:'606067028692',bank:'State Bank Of India',app:'vinothnft@ptyes',time:'01:59 PM, 01 Mar 2026',recv:25,given:24.25,note:''},
+  {id:'i14',src:'bajaj',name:'Girija',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'01 Mar 2026',recv:10,given:9.7,note:''},
+  {id:'i15',src:'bajaj',name:'Girija',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'01 Mar 2026',recv:1,given:0.97,note:''},
+  {id:'i16',src:'paytm',name:'Vinoth',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'01 Mar 2026',recv:10,given:9.7,note:'FASTOFFER'},
+  {id:'i17',src:'paytm',name:'Vinoth',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'01 Mar 2026',recv:10,given:9.7,note:'FASTOFFER'},
+  {id:'i18',src:'paytm',name:'Vinoth',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'01 Mar 2026',recv:10,given:9.7,note:'FASTOFFER'},
+  {id:'i19',src:'paytm',name:'Girija',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'01 Mar 2026',recv:10,given:9.7,note:'FASTOFFER'},
+  {id:'i20',src:'paytm',name:'Girija',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'01 Mar 2026',recv:11,given:10.67,note:'FASTOFFER'},
+  {id:'i21',src:'paytm',name:'Girija',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'02 Mar 2026',recv:10,given:9.7,note:'FASTOFFER'},
+  {id:'i22',src:'paytm',name:'Girija',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'02 Mar 2026',recv:11,given:10.67,note:'FASTOFFER'},
+  {id:'i23',src:'paytm',name:'Girija',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'02 Mar 2026',recv:10,given:9.7,note:'FASTOFFER'},
+  {id:'i24',src:'paytm',name:'Girija',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'02 Mar 2026',recv:11,given:10.67,note:'FASTOFFER'},
+  {id:'i25',src:'paytm',name:'Girija',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'03 Mar 2026',recv:10,given:9.7,note:'FASTOFFER'},
+  {id:'i26',src:'paytm',name:'Girija',user:'',uid:'',phone:'',upi:'',txnid:'',bank:'',app:'',time:'03 Mar 2026',recv:11,given:10.67,note:'FASTOFFER'},
+  {id:'i27',src:'tg',name:'Jaizfer 🐤',user:'@Jaizfer_2nd_id',uid:'398166199167',phone:'398166199167',upi:'9696317150@slc',txnid:'398166199167',bank:'Fi Federal Bank',app:'vinothnft@ptyes',time:'07:35 PM, 01 Mar 2026',recv:5,given:4.85,note:'SEED UXUY'},
+  {id:'i28',src:'tg',name:'Sidhu 🍅',user:'@jasssidhu786',uid:'1429367557',phone:'1429367557',upi:'bharatpe09909121691@yesbankltd',txnid:'201095963546',bank:'Roarbank Unity SFB',app:'vinothnft@ptyes',time:'09:12 PM, 01 Mar 2026',recv:5,given:4.85,note:''},
+  {id:'i29',src:'tg',name:'Sidhu 🍅',user:'@jasssidhu786',uid:'1429367557',phone:'1429367557',upi:'bharatpe09909121691@yesbankltd',txnid:'201095963546',bank:'Roarbank Unity SFB',app:'vinothnft@ptyes',time:'09:12 PM, 01 Mar 2026',recv:5,given:4.85,note:''},
+  {id:'i30',src:'tg',name:'R M',user:'@rm0_01',uid:'1061778658',phone:'1061778658',upi:'ranajitmukherjee19@ybl',txnid:'398569475879',bank:'Fi Federal Bank',app:'vinothnft@ptyes',time:'07:05 PM, 08 Mar 2026',recv:6,given:5.82,note:''},
+  {id:'i31',src:'tg',name:'Mohitjais',user:'@Mohitbolteee',uid:'6155969267',phone:'6155969267',upi:'jaiswalmohit356@oksbi',txnid:'600654037536',bank:'Fi Federal Bank',app:'vinothnft@ptyes',time:'10:30 PM, 09 Mar 2026',recv:4,given:3.88,note:''},
+  {id:'i32',src:'tg',name:'Mohitjais',user:'@Mohitbolteee',uid:'6155969267',phone:'6155969267',upi:'jaiswalmohit356@oksbi',txnid:'398643379492',bank:'Fi Federal Bank',app:'vinothnft@ptyes',time:'10:35 PM, 09 Mar 2026',recv:8,given:7.76,note:''},
+  {id:'i33',src:'tg',name:'Smart Hemanta',user:'@HEMANTA9658',uid:'5056985845',phone:'5056985845',upi:'9668781432@mbk',txnid:'201657710549',bank:'Fi Federal Bank',app:'vinothnft@ptyes',time:'06:42 PM, 10 Mar 2026',recv:6,given:5.82,note:''},
+  {id:'i34',src:'tg',name:'Pushkar',user:'@Zatakboy',uid:'1414426561',phone:'1414426561',upi:'9149309474@slc',txnid:'398692207588',bank:'Fi Federal Bank',app:'vinothnft@ptyes',time:'08:12 PM, 10 Mar 2026',recv:12,given:11.64,note:''},
+  {id:'i35',src:'tg',name:'Mahesh',user:'@maheshrj88',uid:'7236548907',phone:'7236548907',upi:'Chinmayaa@slc',txnid:'607185341967',bank:'Fi Federal Bank',app:'vinoth.k@superyes',time:'12 Mar 2026 09:25',recv:6,given:5.82,note:''},
+  {id:'i36',src:'tg',name:'Syeed Khan',user:'@Syeed_khan',uid:'2039761295',phone:'2039761295',upi:'',txnid:'',bank:'',app:'',time:'12 Mar 2026',recv:20,given:19.4,note:''},
+];
+
+const DB={get:()=>JSON.parse(localStorage.getItem('vmt2')||'null')||INITIAL,set:v=>localStorage.setItem('vmt2',JSON.stringify(v))};
+if(!localStorage.getItem('vmt2'))DB.set(INITIAL);
+
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).substr(2,4);
+const fmt=n=>'₹'+parseFloat(n||0).toFixed(2);
+const pf=e=>parseFloat(e.recv||0)-parseFloat(e.given||0);
+const srcN={tg:'Telegram',paytm:'Paytm',bhim:'BHIM',bajaj:'Bajaj',gift:'Gift Card',other:'Other'};
+const srcB={tg:'b-tg',paytm:'b-paytm',bhim:'b-bhim',bajaj:'b-bajaj',gift:'b-gift',other:'b-other'};
+let curF='all';
+
+setInterval(()=>document.getElementById('htime').textContent=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}),1000);
+
+function toast(m,err=false){const t=document.getElementById('toast');t.textContent=m;t.className='toast on'+(err?' err':'');setTimeout(()=>t.classList.remove('on'),2500)}
+
+function sw(i,el){
+  [0,1,2,3].forEach(j=>document.getElementById('p'+j).classList.remove('on'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  document.getElementById('p'+i).classList.add('on');
+  if(el)el.classList.add('on');
+  if(i===0)renderHome();
+  if(i===2)renderRecords();
+  if(i===3)initChat();
+}
+
+function setF(f,el){curF=f;document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));if(el)el.classList.add('on');renderRecords()}
+
+function calcP(){
+  const r=parseFloat(document.getElementById('a-recv').value)||0;
+  const g=parseFloat(document.getElementById('a-given').value)||0;
+  const p=r-g,pct=r>0?((p/r)*100).toFixed(1):0;
+  if(r||g){
+    document.getElementById('a-calc').style.display='block';
+    const pe=document.getElementById('a-pf');pe.textContent=fmt(p);pe.style.color=p>=0?'var(--green2)':'var(--red)';
+    document.getElementById('a-pct').textContent=pct+'%';
+  }
+}
+
+function addEntry(){
+  const recv=parseFloat(document.getElementById('a-recv').value);
+  if(!recv)return toast('Amount required',true);
+  const given=parseFloat(document.getElementById('a-given').value)||recv*0.97;
+  const e={id:uid(),src:document.getElementById('a-src').value,name:document.getElementById('a-name').value.trim()||'—',user:document.getElementById('a-user').value.trim(),uid:document.getElementById('a-uid').value.trim(),phone:document.getElementById('a-phone').value.trim(),upi:document.getElementById('a-upi').value.trim(),txnid:document.getElementById('a-txnid').value.trim(),bank:document.getElementById('a-bank').value.trim(),app:document.getElementById('a-app').value.trim(),time:document.getElementById('a-time').value.trim()||new Date().toLocaleString('en-IN'),recv,given,note:document.getElementById('a-note').value.trim()};
+  const D=DB.get();D.push(e);DB.set(D);
+  ['a-name','a-user','a-uid','a-phone','a-upi','a-txnid','a-bank','a-app','a-time','a-recv','a-given','a-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('a-calc').style.display='none';
+  toast('Saved ✓');renderHome();
+}
+
+function delEntry(id){if(!confirm('Delete?'))return;DB.set(DB.get().filter(e=>e.id!==id));toast('Deleted');renderRecords();renderHome()}
+
+// HOME
+function renderHome(){
+  const D=DB.get();
+  const tR=D.reduce((s,e)=>s+e.recv,0),tP=D.reduce((s,e)=>s+pf(e),0);
+  const margin=tR>0?((tP/tR)*100).toFixed(2):0;
+  const srcs=['tg','paytm','bhim','bajaj','gift'];
+  document.getElementById('p0').innerHTML=`
+  <div class="profit-hero">
+    <div class="ph-label">Net Profit — ${D.length} Transactions</div>
+    <div class="ph-amount">${fmt(tP)}</div>
+    <div class="ph-sub">Received ₹${Math.round(tR).toLocaleString('en-IN')} · Margin ${margin}%</div>
+  </div>
+  <div class="sg">
+    ${srcs.map(s=>{const sd=D.filter(e=>e.src===s);if(!sd.length)return'';const sp=sd.reduce((x,e)=>x+pf(e),0);return`<div class="sb" style="--sc:${s==='tg'?'#7b68ee':s==='gift'?'#ec4899':s==='paytm'?'#4fc3f7':s==='bhim'?'var(--gold)':'#ff8f00'}"><div style="font-size:8px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">${srcN[s]}</div><div class="sv">${fmt(sp)}</div><div class="sl">${sd.length} txn</div></div>`;}).join('')}
+  </div>
+  <div class="sec">Recent</div>
+  ${D.slice().reverse().slice(0,6).map(e=>{const p=pf(e);return`<div class="txn"><div class="txn-top"><div><div class="txn-name">${e.name}</div>${e.user?`<div class="txn-user">${e.user}</div>`:''}<div style="margin-top:4px"><span class="badge ${srcB[e.src]||'b-other'}">${srcN[e.src]||e.src}</span></div></div><div class="txn-right"><div class="txn-pf ${p<0?'neg':''}">${fmt(p)}</div><div class="txn-meta">${fmt(e.recv)} recv</div><div class="txn-meta">${e.time}</div></div></div></div>`;}).join('')}`;
+}
+
+// RECORDS
+function renderRecords(){
+  const q=(document.getElementById('s-q')?.value||'').toLowerCase();
+  let D=DB.get();
+  if(curF!=='all')D=D.filter(e=>e.src===curF);
+  if(q)D=D.filter(e=>[e.name,e.user,e.uid,e.phone,e.upi,e.txnid,e.bank,e.note].join(' ').toLowerCase().includes(q));
+  D=D.slice().reverse();
+  const tP=D.reduce((s,e)=>s+pf(e),0);
+  const el=document.getElementById('records');
+  if(!D.length){el.innerHTML='<div class="empty"><div>⊘</div>No records</div>';return}
+  el.innerHTML=`<div style="display:flex;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:12px"><span style="font-size:11px;color:var(--muted2)">${D.length} records</span><span style="font-family:'Playfair Display',serif;color:var(--gold);font-weight:700">${fmt(tP)} profit</span></div>
+  ${D.map(e=>{const p=pf(e);const det=[[e.user,'Username'],[e.uid,'User ID'],[e.phone,'Phone'],[e.upi,'UPI ID'],[e.txnid,'Txn ID'],[e.bank,'Bank'],[e.app,'App/UPI'],[e.time,'Time'],[e.note,'Note']].filter(x=>x[0]);return`<div class="txn"><div class="txn-top"><div><div class="txn-name">${e.name}</div>${e.user?`<div class="txn-user">${e.user}</div>`:''}<div style="margin-top:4px"><span class="badge ${srcB[e.src]||'b-other'}">${srcN[e.src]||e.src}</span></div></div><div class="txn-right"><div class="txn-pf ${p<0?'neg':''}">${fmt(p)}</div><div class="txn-meta">${fmt(e.recv)} recv · ${fmt(e.given)} given</div></div></div>${det.length?`<div class="txn-details">${det.map(([v,l])=>`<div class="td"><div class="td-l">${l}</div><div class="td-v">${v}</div></div>`).join('')}</div>`:''}<div class="txn-act"><button class="btn-sm btn-del" onclick="delEntry('${e.id}')">Delete</button></div></div>`;}).join('')}`;
+}
+
+// ===== AI CHAT =====
+let chatHistory=[];
+let chatInited=false;
+
+function initChat(){
+  if(chatInited)return;
+  chatInited=true;
+  addMsg('ai','வணக்கம் Vinoth! 👋 நான் உங்க VM Tracker AI. உங்க data பத்தி கேளுங்க, theme மாத்தணும்னா சொல்லுங்க, புது feature வேணும்னா சொல்லுங்க - எல்லாம் செய்வேன்!');
+}
+
+function addMsg(role,text){
+  const msgs=document.getElementById('chat-msgs');
+  const now=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+  const div=document.createElement('div');
+  div.className=role==='user'?'msg msg-user':'msg msg-ai';
+  div.innerHTML=text.replace(/\n/g,'<br>')+`<div class="msg-time">${now}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function showTyping(){
+  const msgs=document.getElementById('chat-msgs');
+  const div=document.createElement('div');
+  div.className='msg msg-ai';div.id='typing-ind';
+  div.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+
+function sendQ(el){
+  document.getElementById('chat-in').value=el.textContent.replace(/^[^\s]+\s/,'').trim();
+  sendMsg();
+}
+
+async function sendMsg(){
+  const inp=document.getElementById('chat-in');
+  const msg=inp.value.trim();
+  if(!msg)return;
+  inp.value='';inp.style.height='42px';
+  addMsg('user',msg);
+
+  const D=DB.get();
+  const tP=D.reduce((s,e)=>s+pf(e),0);
+  const tR=D.reduce((s,e)=>s+e.recv,0);
+  const tG=D.reduce((s,e)=>s+(e.given||0),0);
+  const srcStats=Object.entries(D.reduce((acc,e)=>{acc[e.src]=(acc[e.src]||{count:0,recv:0,profit:0});acc[e.src].count++;acc[e.src].recv+=e.recv;acc[e.src].profit+=pf(e);return acc},{})).map(([s,v])=>`${s}:${v.count}txn ₹${v.profit.toFixed(2)}profit`).join(', ');
+
+  const systemPrompt=`You are VM Tracker AI assistant for Vinoth, a Telegram recharge/gift card business tracker app.
+
+Current app data:
+- Total transactions: ${D.length}
+- Total received: ₹${tR.toFixed(2)}
+- Total given: ₹${tG.toFixed(2)}  
+- Net profit: ₹${tP.toFixed(2)}
+- Margin: ${tR>0?((tP/tR)*100).toFixed(2):0}%
+- Source breakdown: ${srcStats}
+- Recent 5: ${D.slice(-5).map(e=>`${e.name}(${e.src}) recv₹${e.recv}`).join(', ')}
+
+You can respond in Tamil or English based on user's language.
+Keep responses concise and helpful.
+For data questions, give specific numbers from the data above.
+For feature requests, say "noted! I'll tell Claude to build it" and explain what will be added.
+For theme changes, describe what color change you would make.
+Be friendly and conversational.`;
+
+  const typing=showTyping();
+  document.getElementById('send-btn').disabled=true;
+
+  chatHistory.push({role:'user',content:msg});
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:systemPrompt,
+        messages:chatHistory.slice(-10)
+      })
+    });
+    const data=await res.json();
+    const reply=data.content?.[0]?.text||'Sorry, error occurred.';
+    chatHistory.push({role:'assistant',content:reply});
+    typing.remove();
+    addMsg('ai',reply);
+  }catch(e){
+    typing.remove();
+    addMsg('ai','Connection error. Try again!');
+  }
+  document.getElementById('send-btn').disabled=false;
+}
+
+// Auto resize textarea
+document.addEventListener('DOMContentLoaded',()=>{
+  const ta=document.getElementById('chat-in');
+  if(ta)ta.addEventListener('input',()=>{ta.style.height='42px';ta.style.height=Math.min(ta.scrollHeight,100)+'px'});
+});
+
+// INIT
+setInterval(()=>document.getElementById('htime').textContent=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}),1000);
+renderHome();
+</script>
+</body>
+</html>
